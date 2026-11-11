@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Глубокий тёмно-графитовый фон с мягким градиентным акцентом -->
+    <path
+        android:fillColor="#12151B"
+        android:pathData="M0,0h108v108h-108z" />
+
+    <!-- Декоративная подложка внутри безопасной зоны -->
+    <path
+        android:fillColor="#1C222D"
+        android:pathData="M34,22 L74,22 A12,12 0 0,1 86,34 L86,74 A12,12 0 0,1 74,86 L34,86 A12,12 0 0,1 22,74 L22,34 A12,12 0 0,1 34,22 Z" />
+</vector>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Знаки +, −, × (система сама перекрасит #FF000000 в цвет Monet) -->
+    <path
+        android:pathData="M34,41 L48,41 M41,34 L41,48 M60,41 L74,41 M36,62 L46,72 M46,62 L36,72"
+        android:strokeWidth="5.0"
+        android:strokeColor="#FF000000"
+        android:strokeLineCap="round" />
+
+    <!-- Круглая кнопка с прозрачным вырезом "=" через evenOdd -->
+    <path
+        android:fillColor="#FF000000"
+        android:fillType="evenOdd"
+        android:pathData="M67,54 A13,13 0 1,1 67,80 A13,13 0 1,1 67,54 Z M62.5,62.25 L71.5,62.25 A1.85,1.85 0 1,1 71.5,65.95 L62.5,65.95 A1.85,1.85 0 1,1 62.5,62.25 Z M62.5,68.05 L71.5,68.05 A1.85,1.85 0 1,1 71.5,71.75 L62.5,71.75 A1.85,1.85 0 1,1 62.5,68.05 Z" />
+</vector>

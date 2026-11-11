@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Плюс (+) в левом верхнем квадранте -->
+    <path
+        android:pathData="M34,41 L48,41 M41,34 L41,48"
+        android:strokeWidth="4.8"
+        android:strokeColor="#E2E8F0"
+        android:strokeLineCap="round" />
+
+    <!-- Минус (−) в правом верхнем квадранте -->
+    <path
+        android:pathData="M60,41 L74,41"
+        android:strokeWidth="4.8"
+        android:strokeColor="#A8C7FA"
+        android:strokeLineCap="round" />
+
+    <!-- Умножить (×) в левом нижнем квадранте -->
+    <path
+        android:pathData="M36,62 L46,72 M46,62 L36,72"
+        android:strokeWidth="4.8"
+        android:strokeColor="#A8C7FA"
+        android:strokeLineCap="round" />
+
+    <!-- Акцентная круглая кнопка "=" в правом нижнем квадранте -->
+    <path
+        android:fillColor="#A8C7FA"
+        android:pathData="M67,54 A13,13 0 1,1 67,80 A13,13 0 1,1 67,54 Z" />
+
+    <!-- Знак "=" поверх акцентного круга -->
+    <path
+        android:pathData="M61.5,64.2 L72.5,64.2 M61.5,69.8 L72.5,69.8"
+        android:strokeWidth="4.2"
+        android:strokeColor="#062E6F"
+        android:strokeLineCap="round" />
+</vector>
