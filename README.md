@@ -1,21 +1,45 @@
 # CalcPlus
 
-Многорежимный калькулятор на **Kotlin** и **Jetpack Compose**, построенный по гайдлайнам **Material 3 Expressive** под **Android 16 (API 36)**.
+<p align="center">
+  <img src="https://img.shields.io/github/actions/workflow/status/archikqqq/CalcPlus/build.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=Build" alt="Build Status" />
+  <img src="https://img.shields.io/badge/Kotlin-2.0+-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white" alt="Kotlin" />
+  <img src="https://img.shields.io/badge/Android%20SDK-36-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Android SDK 36" />
+  <img src="https://img.shields.io/badge/Material%20Design-3%20Expressive-6750A4?style=for-the-badge&logo=materialdesign&logoColor=white" alt="Material Design 3 Expressive" />
+  <img src="https://img.shields.io/github/license/archikqqq/CalcPlus?style=for-the-badge&color=blue" alt="License" />
+</p>
+
+---
+
+Современный калькулятор для Android с расширенными математическими возможностями и интерфейсом на базе **Material Design 3 Expressive**.
 
 ## Возможности
 
-- **Material 3 Expressive & Monet:** 100% динамические цвета Monet, поддержка Светлой, Тёмной и чисто чёрной **AMOLED** темы. Круглые клавиши с пружинящим морфингом в скруглённый квадрат (`30%`) при нажатии, пропорциональные иконки и физика вылета ответа.
-- **Обычный и Инженерный режимы:** раскладка `4×5` по эталону Google Calculator, шторка на шевроне с памятью (`MC`, `MR`, `M+`, `M−`, `Ans`) и тригонометрией (`DEG`/`RAD`), рекурсивный парсер выражений, свайп для удаления и копирование по долгому тапу.
-- **Дроби (`BigInteger`):** вычисления обыкновенных и смешанных дробей без потери точности и перевод из десятичной дроби.
-- **Конвертер величин:** 8 категорий с мгновенным пересчётом.
-- **Режим скорости:** математический тренажёр на 60 секунд + физические задачи на формулу пути `S = V·t` (Лёгкая, Средняя и Сложная).
-- **ИИ-режим (Google AI Studio):** пошаговое решение текстовых задач с шифрованием ключа в `Android Keystore (AES-GCM)`.
+- **Обычный калькулятор** — базовые арифметические вычисления с мгновенным отображением промежуточного результата.
+- **Инженерный калькулятор** — расширенные тригонометрические, логарифмические и степенные операции.
+- **Работа с дробями** — точные расчёты обыкновенных дробей с автоматическим сокращением и приведением к общему знаменателю.
+- **Конвертер единиц** — быстрый перевод различных систем измерений.
+- **Математический тренажёр** — интерактивные упражнения для тренировки устного счёта и логики.
+- **ИИ-режим** — специализированный режим для решения задач с контекстными подсказками.
 
-## Шрифт Google Sans Flex
+## Стек технологий
 
-Положите файл вариативного шрифта в `app/src/main/res/font/google_sans_flex.ttf` (при его отсутствии приложение автоматически использует системный `SansSerif`).
-Шрифт **Google Sans Flex** из каталога Google Fonts распространяется под лицензией [SIL Open Font License 1.1 (OFL-1.1)](https://openfontlicense.org/). Авторские права на шрифт принадлежат Google LLC.
+- **Язык**: Kotlin
+- **UI Toolkit**: Jetpack Compose
+- **Дизайн-система**: Material Design 3 Expressive, Material You (Dynamic Colors)
+- **Целевая платформа**: Android (minSdk 36, targetSdk 36)
+- **Сборщик**: Gradle 9.5.0
+- **Java**: JDK 17
 
-## Лицензия
+## Сборка и запуск
 
-Код проекта распространяется под лицензией [MIT](LICENSE).
+Для сборки проекта на локальной машине требуется установленный **JDK 17** и **Android SDK 36**:
+
+```bash
+# Клонирование репозитория
+git clone [https://github.com/archikqqq/CalcPlus.git](https://github.com/archikqqq/CalcPlus.git)
+
+# Переход в каталог проекта
+cd CalcPlus
+
+# Сборка Debug APK
+./gradlew assembleDebug
