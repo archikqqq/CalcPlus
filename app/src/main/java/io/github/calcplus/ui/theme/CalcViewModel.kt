@@ -8,17 +8,11 @@ import io.github.calcplus.data.PreferencesRepository
 import io.github.calcplus.domain.ConverterCategory
 import io.github.calcplus.domain.FractionNumber
 import io.github.calcplus.domain.MathEvaluator
-import io.github.calcplus.domain.SpeedGenerator
-import io.github.calcplus.domain.SpeedPreset
-import io.github.calcplus.domain.SpeedTask
-import io.github.calcplus.domain.SvtDifficulty
 import io.github.calcplus.domain.UnitConverter
 import io.github.calcplus.domain.UnitItem
 import io.github.calcplus.model.CalcMode
 import io.github.calcplus.model.HapticStrength
 import io.github.calcplus.model.ThemeMode
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,17 +52,6 @@ data class CalcUiState(
     val converterToUnit: UnitItem = UnitConverter.getUnits(ConverterCategory.LENGTH)[1],
     val converterInput: String = "1",
 
-    // Режим скорости
-    val speedPreset: SpeedPreset = SpeedPreset.ARITHMETIC,
-    val svtDifficulty: SvtDifficulty = SvtDifficulty.EASY,
-    val isSpeedRunning: Boolean = false,
-    val speedSecondsLeft: Int = 60,
-    val currentTask: SpeedTask = SpeedGenerator.nextTask(SpeedPreset.ARITHMETIC),
-    val speedUserAnswer: String = "",
-    val speedCurrentStreak: Int = 0,
-    val speedBestScores: Map<SpeedPreset, Int> = emptyMap(),
-    val svtBestScores: Map<SvtDifficulty, Int> = emptyMap(),
-
     // ИИ-режим
     val apiKey: String = "",
     val geminiModelId: String = "",
@@ -86,8 +69,6 @@ class CalcViewModel(
     private val _uiState = MutableStateFlow(CalcUiState())
     val uiState: StateFlow<CalcUiState> = _uiState.asStateFlow()
 
-    private var timerJob: Job? = null
-
     init {
         viewModelScope.launch {
             preferencesRepository.settingsFlow.collect { stored ->
@@ -97,9 +78,7 @@ class CalcViewModel(
                         useDynamicColor = stored.useDynamicColor,
                         hapticStrength = stored.hapticStrength,
                         apiKey = stored.decryptedApiKey,
-                        geminiModelId = stored.geminiModelId,
-                        speedBestScores = stored.highScores,
-                        svtBestScores = stored.svtHighScores
+                        geminiModelId = stored.geminiModelId
                     )
                 }
             }
@@ -311,91 +290,6 @@ class CalcViewModel(
 
     fun setConverterInput(value: String) {
         _uiState.update { it.copy(converterInput = value) }
-    }
-
-    fun selectSpeedPreset(preset: SpeedPreset) {
-        stopSpeedGame()
-        _uiState.update {
-            it.copy(
-                speedPreset = preset,
-                currentTask = SpeedGenerator.nextTask(preset, it.svtDifficulty),
-                speedUserAnswer = "",
-                speedCurrentStreak = 0
-            )
-        }
-    }
-
-    fun selectSvtDifficulty(difficulty: SvtDifficulty) {
-        stopSpeedGame()
-        _uiState.update {
-            it.copy(
-                svtDifficulty = difficulty,
-                currentTask = SpeedGenerator.nextTask(it.speedPreset, difficulty),
-                speedUserAnswer = "",
-                speedCurrentStreak = 0
-            )
-        }
-    }
-
-    fun startSpeedGame() {
-        timerJob?.cancel()
-        val preset = _uiState.value.speedPreset
-        val diff = _uiState.value.svtDifficulty
-        _uiState.update {
-            it.copy(
-                isSpeedRunning = true,
-                speedSecondsLeft = 60,
-                speedCurrentStreak = 0,
-                speedUserAnswer = "",
-                currentTask = SpeedGenerator.nextTask(preset, diff)
-            )
-        }
-        timerJob = viewModelScope.launch {
-            while (_uiState.value.speedSecondsLeft > 0 && _uiState.value.isSpeedRunning) {
-                delay(1000L)
-                _uiState.update { state ->
-                    val nextSec = state.speedSecondsLeft - 1
-                    if (nextSec <= 0) {
-                        state.copy(isSpeedRunning = false, speedSecondsLeft = 0)
-                    } else {
-                        state.copy(speedSecondsLeft = nextSec)
-                    }
-                }
-            }
-        }
-    }
-
-    fun stopSpeedGame() {
-        timerJob?.cancel()
-        _uiState.update { it.copy(isSpeedRunning = false) }
-    }
-
-    fun onSpeedInput(char: String) {
-        if (!_uiState.value.isSpeedRunning) return
-        _uiState.update { state ->
-            val updatedInput = when (char) {
-                "⌫" -> state.speedUserAnswer.dropLast(1)
-                "C" -> ""
-                else -> state.speedUserAnswer + char
-            }
-            if (SpeedGenerator.isCorrect(updatedInput, state.currentTask)) {
-                val newStreak = state.speedCurrentStreak + 1
-                viewModelScope.launch {
-                    if (state.speedPreset == SpeedPreset.PHYSICS_SVT) {
-                        preferencesRepository.updateSvtHighScoreIfBetter(state.svtDifficulty, newStreak)
-                    } else {
-                        preferencesRepository.updateHighScoreIfBetter(state.speedPreset, newStreak)
-                    }
-                }
-                state.copy(
-                    speedCurrentStreak = newStreak,
-                    speedUserAnswer = "",
-                    currentTask = SpeedGenerator.nextTask(state.speedPreset, state.svtDifficulty)
-                )
-            } else {
-                state.copy(speedUserAnswer = updatedInput)
-            }
-        }
     }
 
     fun updateAiPrompt(text: String) {

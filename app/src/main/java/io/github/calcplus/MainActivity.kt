@@ -41,7 +41,6 @@ import io.github.calcplus.ui.screens.CalculatorScreen
 import io.github.calcplus.ui.screens.ConverterScreen
 import io.github.calcplus.ui.screens.FractionsScreen
 import io.github.calcplus.ui.screens.SettingsBottomSheet
-import io.github.calcplus.ui.screens.MotionTasksScreen
 import io.github.calcplus.ui.theme.CalcPlusTheme
 
 class MainActivity : ComponentActivity() {
@@ -135,8 +134,6 @@ fun CalcPlusMainContent(
                         uiState = uiState,
                         viewModel = viewModel
                     )
-                    CalcMode.SPEED -> MotionTasksScreen()
-
                     CalcMode.AI -> AiSolverScreen(
                         uiState = uiState,
                         viewModel = viewModel,

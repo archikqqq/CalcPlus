@@ -4,7 +4,6 @@ enum class CalcMode(val title: String) {
     BASIC("Обычный"),
     SCIENTIFIC("Инженерный"),
     FRACTIONS("Дроби"),
-    SPEED("Скорость"),
     CONVERTER("Конвертер"),
     AI("ИИ")
 }

@@ -3,11 +3,8 @@ package io.github.calcplus.data
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import io.github.calcplus.domain.SpeedPreset
-import io.github.calcplus.domain.SvtDifficulty
 import io.github.calcplus.model.HapticStrength
 import io.github.calcplus.model.ThemeMode
 import kotlinx.coroutines.flow.Flow
@@ -20,9 +17,7 @@ data class StoredSettings(
     val useDynamicColor: Boolean = true,
     val hapticStrength: HapticStrength = HapticStrength.MEDIUM,
     val decryptedApiKey: String = "",
-    val geminiModelId: String = "",
-    val highScores: Map<SpeedPreset, Int> = emptyMap(),
-    val svtHighScores: Map<SvtDifficulty, Int> = emptyMap()
+    val geminiModelId: String = ""
 )
 
 class PreferencesRepository(private val context: Context) {
@@ -33,9 +28,6 @@ class PreferencesRepository(private val context: Context) {
         val HAPTIC = stringPreferencesKey("haptic_strength")
         val ENCRYPTED_API_KEY = stringPreferencesKey("encrypted_api_key")
         val GEMINI_MODEL_ID = stringPreferencesKey("gemini_model_id")
-
-        fun highScoreKey(preset: SpeedPreset) = intPreferencesKey("high_score_${preset.name}")
-        fun svtHighScoreKey(difficulty: SvtDifficulty) = intPreferencesKey("high_score_svt_${difficulty.name}")
     }
 
     val settingsFlow: Flow<StoredSettings> = context.dataStore.data.map { prefs ->
@@ -53,22 +45,12 @@ class PreferencesRepository(private val context: Context) {
         val apiKey = CryptoManager.decrypt(encryptedKey)
         val modelId = prefs[Keys.GEMINI_MODEL_ID].orEmpty()
 
-        val scores = SpeedPreset.entries.associateWith { preset ->
-            prefs[Keys.highScoreKey(preset)] ?: 0
-        }
-
-        val svtScores = SvtDifficulty.entries.associateWith { diff ->
-            prefs[Keys.svtHighScoreKey(diff)] ?: 0
-        }
-
         StoredSettings(
             themeMode = theme,
             useDynamicColor = dynamic,
             hapticStrength = haptic,
             decryptedApiKey = apiKey,
-            geminiModelId = modelId,
-            highScores = scores,
-            svtHighScores = svtScores
+            geminiModelId = modelId
         )
     }
 
@@ -89,26 +71,6 @@ class PreferencesRepository(private val context: Context) {
         context.dataStore.edit { prefs ->
             prefs[Keys.ENCRYPTED_API_KEY] = encrypted
             prefs[Keys.GEMINI_MODEL_ID] = modelId.trim()
-        }
-    }
-
-    suspend fun updateHighScoreIfBetter(preset: SpeedPreset, score: Int) {
-        context.dataStore.edit { prefs ->
-            val key = Keys.highScoreKey(preset)
-            val current = prefs[key] ?: 0
-            if (score > current) {
-                prefs[key] = score
-            }
-        }
-    }
-
-    suspend fun updateSvtHighScoreIfBetter(difficulty: SvtDifficulty, score: Int) {
-        context.dataStore.edit { prefs ->
-            val key = Keys.svtHighScoreKey(difficulty)
-            val current = prefs[key] ?: 0
-            if (score > current) {
-                prefs[key] = score
-            }
         }
     }
 }

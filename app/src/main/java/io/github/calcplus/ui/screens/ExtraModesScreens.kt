@@ -39,21 +39,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import io.github.calcplus.domain.ConverterCategory
 import io.github.calcplus.domain.FractionNumber
-import io.github.calcplus.domain.SpeedPreset
-import io.github.calcplus.domain.SvtDifficulty
 import io.github.calcplus.domain.UnitConverter
 import io.github.calcplus.model.HapticStrength
 import io.github.calcplus.model.ThemeMode
 import io.github.calcplus.ui.CalcUiState
 import io.github.calcplus.ui.CalcViewModel
-import io.github.calcplus.ui.components.CalcButtonRole
-import io.github.calcplus.ui.components.ExpressiveCalcButton
 
 @Composable
 fun FractionsScreen(
@@ -299,142 +294,6 @@ fun ConverterScreen(
                     style = MaterialTheme.typography.displayMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun SpeedModeScreen(
-    uiState: CalcUiState,
-    viewModel: CalcViewModel,
-    modifier: Modifier = Modifier
-) {
-    val isPhysics = uiState.speedPreset == SpeedPreset.PHYSICS_SVT
-    val bestForCurrent = if (isPhysics) {
-        uiState.svtBestScores[uiState.svtDifficulty] ?: 0
-    } else {
-        uiState.speedBestScores[uiState.speedPreset] ?: 0
-    }
-
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            SpeedPreset.entries.forEach { preset ->
-                FilterChip(
-                    selected = uiState.speedPreset == preset,
-                    onClick = { viewModel.selectSpeedPreset(preset) },
-                    label = { Text(preset.title) }
-                )
-            }
-        }
-
-        if (isPhysics) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                SvtDifficulty.entries.forEach { diff ->
-                    FilterChip(
-                        selected = uiState.svtDifficulty == diff,
-                        onClick = { viewModel.selectSvtDifficulty(diff) },
-                        label = { Text(diff.title) }
-                    )
-                }
-            }
-        }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.extraLarge,
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)
-        ) {
-            Column(
-                modifier = Modifier.padding(18.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Таймер: ${uiState.speedSecondsLeft} с",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = if (uiState.speedSecondsLeft <= 10 && uiState.isSpeedRunning) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        }
-                    )
-                    Text(
-                        text = "Серия: ${uiState.speedCurrentStreak}  |  Рекорд: $bestForCurrent",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                if (!uiState.isSpeedRunning) {
-                    Button(
-                        onClick = viewModel::startSpeedGame,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (uiState.speedSecondsLeft == 0) "Сыграть ещё раз (60 с)" else "Старт (60 секунд)")
-                    }
-                } else {
-                    Text(
-                        text = uiState.currentTask.question,
-                        style = if (isPhysics) MaterialTheme.typography.titleLarge else MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Text(
-                        text = "Ответ: ${uiState.speedUserAnswer.ifBlank { "?" }}",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        val bottomLeftKey = if (uiState.speedPreset == SpeedPreset.FRACTIONS) "/" else ","
-        val padRows = listOf(
-            listOf("7", "8", "9"),
-            listOf("4", "5", "6"),
-            listOf("1", "2", "3"),
-            listOf(bottomLeftKey, "0", "⌫")
-        )
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            padRows.forEach { row ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    row.forEach { key ->
-                        ExpressiveCalcButton(
-                            label = key,
-                            onClick = { viewModel.onSpeedInput(key) },
-                            buttonRole = if (key == "⌫" || key == "/" || key == ",") CalcButtonRole.OPERATOR else CalcButtonRole.DIGIT,
-                            hapticStrength = uiState.hapticStrength,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxSize()
-                        )
-                    }
-                }
             }
         }
     }
