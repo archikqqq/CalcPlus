@@ -18,8 +18,10 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -30,6 +32,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Backspace
 import androidx.compose.material.icons.filled.History
@@ -45,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -57,6 +63,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -281,22 +290,8 @@ private fun CalculatorDisplay(
         label = "cursorAlpha"
     )
 
-    // В компактном режиме (инженерный/ландшафт) шрифт меньше, чтобы всё влезло
-    val dynamicFontSize = if (compact) {
-        when {
-            expression.length > 20 -> 24.sp
-            expression.length > 13 -> 32.sp
-            expression.length > 8 -> 40.sp
-            else -> 48.sp
-        }
-    } else {
-        when {
-            expression.length > 20 -> 34.sp
-            expression.length > 13 -> 44.sp
-            expression.length > 8 -> 56.sp
-            else -> 68.sp
-        }
-    }
+    val maxExpressionFontSize = if (compact) 48.sp else 68.sp
+    var expressionFontSize by remember(compact) { mutableStateOf(maxExpressionFontSize) }
 
     Card(
         modifier = modifier
@@ -384,13 +379,11 @@ private fun CalculatorDisplay(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 if (previousExpression.isNotBlank() && livePreview.isBlank()) {
-                    Text(
+                    CalculatorDisplayLine(
                         text = previousExpression,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        textAlign = TextAlign.End,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        ),
                         modifier = Modifier.graphicsLayer {
                             translationY = (1f - flyProgress.value) * 36f
                             val s = 1f - 0.15f * flyProgress.value
@@ -415,39 +408,36 @@ private fun CalculatorDisplay(
                             transformOrigin = TransformOrigin(1f, 1f)
                         }
                 ) {
-                    Text(
+                    CalculatorDisplayLine(
                         text = expression,
                         style = MaterialTheme.typography.displayLarge.copy(
-                            fontSize = dynamicFontSize,
-                            lineHeight = dynamicFontSize * 1.08f
+                            fontSize = maxExpressionFontSize,
+                            lineHeight = maxExpressionFontSize * 1.08f,
+                            color = MaterialTheme.colorScheme.onSurface
                         ),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        textAlign = TextAlign.End,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false)
+                        modifier = Modifier.weight(1f),
+                        onTextLayout = { expressionFontSize = it.layoutInput.style.fontSize }
                     )
                     Box(
                         modifier = Modifier
                             .padding(start = 4.dp)
                             .width(3.dp)
-                            .height(with(density) { (dynamicFontSize * 0.85f).toDp() })
+                            .height(with(density) { (expressionFontSize * 0.85f).toDp() })
                             .graphicsLayer { alpha = cursorAlpha }
                             .background(MaterialTheme.colorScheme.primary, CircleShape)
                     )
                 }
 
                 if (livePreview.isNotBlank()) {
-                    Text(
+                    CalculatorDisplayLine(
                         text = livePreview,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = if (isError) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            MaterialTheme.colorScheme.onSecondaryContainer
-                        },
-                        textAlign = TextAlign.End,
-                        maxLines = 1
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            color = if (isError) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSecondaryContainer
+                            }
+                        )
                     )
                 }
             }
@@ -463,6 +453,57 @@ private fun CalculatorDisplay(
                 Box(modifier = Modifier.height(1.dp))
             }
         }
+    }
+}
+
+@Composable
+private fun CalculatorDisplayLine(
+    text: String,
+    style: TextStyle,
+    modifier: Modifier = Modifier,
+    onTextLayout: (TextLayoutResult) -> Unit = {}
+) {
+    val scrollState = rememberScrollState()
+    val textMeasurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val minFontSize = 28.sp
+    val minimumWidth = remember(text, style, textMeasurer, density) {
+        textMeasurer.measure(
+            text = text,
+            style = style.copy(fontSize = minFontSize),
+            maxLines = 1,
+            softWrap = false
+        ).size.width
+    }
+
+    LaunchedEffect(text, scrollState.maxValue) {
+        scrollState.animateScrollTo(scrollState.maxValue)
+    }
+
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        // Bound auto-size to the viewport; scroll only beyond the minimum font size.
+        val contentWidth = maxOf(maxWidth, with(density) { minimumWidth.toDp() })
+        BasicText(
+            text = text,
+            style = style.copy(textAlign = TextAlign.End),
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            autoSize = if (style.fontSize > minFontSize) {
+                TextAutoSize.StepBased(
+                    minFontSize = minFontSize,
+                    maxFontSize = style.fontSize,
+                    stepSize = 0.25.sp
+                )
+            } else {
+                null
+            },
+            onTextLayout = onTextLayout,
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(scrollState)
+                .width(contentWidth)
+        )
     }
 }
 
